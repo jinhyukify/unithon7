@@ -1,4 +1,4 @@
-//var connection = require('../config/database.js');
+var connection = require('../config/database.js');
 var request = require('request');
 var xml2json = require("node-xml2json");
 var responseCode = require('../config/responseCode.js');
@@ -34,6 +34,8 @@ exports.getLocation = function(req, res)
 	 	var map_result = JSON.parse(body);
 	 	var map_address = map_result.result.items[0].address + " 피시방";
 	 	map_address =  encodeURIComponent(map_address);
+
+	 	/*--------------------  PC방 검색시작    ------------------*/
 	 	request({
 		    url: 'https://openapi.naver.com/v1/search/local.xml?&query=' + map_address, //URL to hit
 		    method: 'GET', //Specify the method
@@ -51,8 +53,32 @@ exports.getLocation = function(req, res)
 		    }
 		    console.log(body);
 		 	var result = xml2json.parser(body);
+		 	///////////\\\\   Item Array  \\\\\\\///////
+		 	/*
+		 	var items = result.rss.channel.item; 
+		 	
+		 	for(var i=0; i< items.length; i++)
+		 	{
+		 		connection.query("SELECT 1 FROM pc_rooms WHERE EXISTS (SELECT 1 FROM pc_rooms WHERE telephone=?) LIMIT 1;", [ items[i].telephone ], function(err, data){
+		 			if(err) console.log(err);
+		 			console.log(i);
+		 			if( !data.length )
+		 			{
+		 				//데이터 무존재
+		 				connection.query("INSERT INTO pc_rooms SET ?;", [items[i]], function(err, result){
+		 					if(i == items.length - 1)
+		 					{
+		 						res.json({"responseCode": responseCode.PARSE_LOCATION_SUCCESS, "locationData": result});
+		 						return;
+		 					}
+		 				})
+		 			}
+		 		})
+		 	}
+			*/
 		 	res.json({"responseCode": responseCode.PARSE_LOCATION_SUCCESS, "locationData": result});
-		 	return;	
+		 	return;
+
 		});
 	});
 	
